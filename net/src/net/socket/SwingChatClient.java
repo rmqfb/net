@@ -7,7 +7,10 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -30,7 +33,7 @@ public class SwingChatClient extends JFrame implements ActionListener, Runnable{
 	
 	String ipTxt;
 	Socket socket;
-	final int PORT = 7500;
+	final int PORT = 7501;
 	PrintWriter pw = null;
 	BufferedReader in = null;
 	OutputStream os = null;
@@ -38,14 +41,17 @@ public class SwingChatClient extends JFrame implements ActionListener, Runnable{
 	public SwingChatClient() {
 		super("채팅 : 클라이언트");
 		connectPane(); // 메소드는 동사를 사용하고, 속성은 명사를 사용한다.
+		chatPane();
+		
 		// card...
 		cardPane = new JPanel();
+		card = new CardLayout();
 		
 		// LayoutManager 중에서 CardLayout 은 탭과 비슷한 기능을 한다.
-		cardPane.setLayout(new CardLayout());
+		cardPane.setLayout(card);
 		cardPane.add(connectionPane, "접속창");
 		cardPane.add(chatPane, "채팅창");
-		cardPane.add(cardPane, "접속창");
+		card.show(cardPane, "접속창");
 		//------card
 		add(cardPane);
 		setBounds(200,200,400,300); // 위치, 사이즈
@@ -70,7 +76,7 @@ public class SwingChatClient extends JFrame implements ActionListener, Runnable{
 		msg.setForeground(Color.MAGENTA);
 		
 		JLabel lb1 = new JLabel("서버 IP : ");
-		txtServer = new JTextField("127.0.0.1",15);
+		txtServer = new JTextField("192.168.62.1",15);  //192.168.62.1
 		// 127.0.0.1 = localhost 로 자기 아이피 주소
 		panel1.add(lb1);
 		
@@ -110,7 +116,25 @@ public class SwingChatClient extends JFrame implements ActionListener, Runnable{
 	}
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		try{
+			socket = new Socket(ipTxt, PORT);
+			String nickName = txtName.getText();
+			os = socket.getOutputStream();
+			pw = new PrintWriter(new OutputStreamWriter(os));
+			pw.println(nickName);
+			pw.flush();
+			InputStream is = socket.getInputStream();
+			in = new BufferedReader(new InputStreamReader(is));
+			
+			String str = "";
+			while (true) {
+				str = in.readLine();
+				txtList.append(str + "\n");
+				
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 		
 	}
 
